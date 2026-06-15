@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coach Oral RGPD</title>
+<style>
+:root{--bg:#0c0c10;--s1:#141418;--s2:#1c1c24;--s3:#24242f;--bd:#2a2a38;--acc:#7c6df0;--grn:#4cbe85;--red:#e05454;--yel:#f5c340;--ora:#e8845a;--txt:#eeeef8;--muted:#8888aa;--info:#5cb8e0}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--txt);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;font-size:15px;line-height:1.6}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(12,12,16,.96);backdrop-filter:blur(10px);border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:0;padding:0;height:52px}
+.nav-logo{padding:0 1.25rem;font-weight:800;font-size:14px;color:var(--acc);white-space:nowrap;border-right:1px solid var(--bd)}
+.nav-links{display:flex;flex:1;overflow-x:auto}
+.nl{padding:0 16px;height:52px;display:flex;align-items:center;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;white-space:nowrap;transition:.15s}
+.nl:hover,.nl.active{color:var(--txt);border-bottom-color:var(--acc)}
+.timer-wrap{padding:0 1rem;margin-left:auto;display:flex;align-items:center;gap:8px;border-left:1px solid var(--bd)}
+.timer-display{font-size:18px;font-weight:800;font-family:monospace;color:var(--yel);min-width:60px;text-align:center}
+.tbtn{padding:5px 12px;border:1px solid var(--bd);border-radius:6px;background:none;color:var(--muted);cursor:pointer;font-size:12px;font-weight:600;transition:.15s}
+.tbtn:hover{color:var(--txt);border-color:var(--muted)}
+.tbtn.start{border-color:var(--grn);color:var(--grn)}
+.tbtn.stop{border-color:var(--red);color:var(--red)}
+
+/* ── LAYOUT ── */
+.page{display:none;padding-top:60px;min-height:100vh}
+.page.on{display:block}
+.wrap{max-width:860px;margin:0 auto;padding:1.5rem 1.25rem}
+
+/* ── CARDS ── */
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:1.5rem;margin-bottom:14px}
+.card-accent{border-left:3px solid var(--acc)}
+.card-green{border-left:3px solid var(--grn)}
+.card-yellow{border-left:3px solid var(--yel)}
+.card-red{border-left:3px solid var(--red)}
+
+/* ── TYPO ── */
+h1{font-size:1.5rem;font-weight:800;margin-bottom:.25rem}
+h2{font-size:1.1rem;font-weight:700;margin-bottom:.75rem}
+h3{font-size:.95rem;font-weight:700;color:var(--acc);text-transform:uppercase;letter-spacing:.6px;margin-bottom:.5rem}
+p{color:#c8c8e0;line-height:1.75;margin-bottom:.6rem}
+p:last-child{margin-bottom:0}
+.sub{font-size:13px;color:var(--muted);margin-bottom:1.25rem}
+
+/* ── STEPS ── */
+.steps{display:flex;flex-direction:column;gap:0}
+.step{display:flex;gap:1rem;padding:.85rem 0;border-bottom:1px solid var(--bd)}
+.step:last-child{border-bottom:none}
+.step-num{width:28px;height:28px;border-radius:50%;background:var(--acc);color:white;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.step-body{flex:1}
+.step-title{font-weight:700;font-size:15px;margin-bottom:.25rem}
+.step-text{font-size:14px;color:#b0b0cc;line-height:1.65}
+.step-text em{color:var(--yel);font-style:normal;font-weight:600}
+.step-text .art{color:var(--info);font-size:12px}
+
+/* ── CRITERIA BOX ── */
+.crit-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:.75rem 0}
+.crit{background:var(--s2);border:1px solid var(--bd);border-radius:10px;padding:.85rem 1rem}
+.crit-num{font-size:11px;font-weight:700;color:var(--acc);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.2rem}
+.crit-title{font-size:14px;font-weight:700;margin-bottom:.2rem}
+.crit-desc{font-size:13px;color:var(--muted);line-height:1.5}
+.crit.excl{border-color:var(--red);}
+.crit.excl .crit-num{color:var(--red)}
+
+/* ── PHRASE TEMPLATE ── */
+.phrase{background:var(--s3);border-left:3px solid var(--grn);border-radius:0 8px 8px 0;padding:.85rem 1rem;font-size:14px;color:#b8e8d0;line-height:1.8;margin:.5rem 0}
+.phrase .blank{color:var(--yel);font-style:italic;text-decoration:underline dotted}
+
+/* ── TOGGLE SECTIONS ── */
+.toggler{cursor:pointer;display:flex;justify-content:space-between;align-items:center;background:var(--s2);border:1px solid var(--bd);border-radius:10px;padding:.85rem 1.1rem;margin-bottom:8px;transition:.15s;user-select:none}
+.toggler:hover{border-color:var(--acc)}
+.toggler h3{margin:0;font-size:14px;color:var(--txt);text-transform:none;letter-spacing:0}
+.toggler .arr{font-size:12px;color:var(--muted);transition:.2s}
+.toggler.open .arr{transform:rotate(90deg)}
+.toggle-body{display:none;background:var(--s2);border:1px solid var(--bd);border-top:none;border-radius:0 0 10px 10px;padding:1.1rem;margin-bottom:8px;margin-top:-8px}
+.toggle-body.open{display:block}
+
+/* ── CAS PRATIQUES ── */
+.cas-tag{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:.75rem}
+.t-acc{background:rgba(124,109,240,.2);color:var(--acc)}
+.t-grn{background:rgba(76,190,133,.2);color:var(--grn)}
+.t-yel{background:rgba(245,195,64,.2);color:var(--yel)}
+.t-red{background:rgba(224,84,84,.2);color:var(--red)}
+.t-info{background:rgba(92,184,224,.2);color:var(--info)}
+.cas-scenario{background:var(--s2);border:1px solid var(--bd);border-radius:10px;padding:1.1rem;font-size:14px;color:#c0c0d8;line-height:1.75;margin-bottom:1rem;font-style:italic}
+.cas-q{font-size:14px;font-weight:700;color:var(--txt);padding:.6rem 0;border-top:1px solid var(--bd);margin-top:.75rem}
+.cas-q:first-child{border-top:none;margin-top:0}
+.reveal-btn{padding:7px 16px;border:1px solid var(--acc);border-radius:8px;background:transparent;color:var(--acc);font-size:13px;font-weight:600;cursor:pointer;transition:.15s;margin-top:.5rem}
+.reveal-btn:hover{background:rgba(124,109,240,.1)}
+.answer{display:none;margin-top:.75rem;background:rgba(124,109,240,.08);border-left:3px solid var(--acc);border-radius:0 8px 8px 0;padding:.85rem 1rem;font-size:14px;color:#c8c8e8;line-height:1.75}
+.answer.show{display:block}
+.answer strong{color:var(--grn)}
+.answer .art-ref{color:var(--info);font-size:12px}
+
+/* ── SIMULATION ── */
+.sim-card{background:var(--s1);border:2px solid var(--bd);border-radius:16px;padding:2rem;text-align:center;min-height:300px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem}
+.sim-card.active{border-color:var(--acc)}
+.sim-big{font-size:1.1rem;font-weight:700;line-height:1.5;max-width:600px;text-align:left;color:var(--txt)}
+.sim-scenario{font-size:14px;color:#c0c0d8;line-height:1.75;text-align:left;max-width:600px;margin-top:.5rem;font-style:italic}
+.sim-questions{text-align:left;max-width:600px;margin-top:.75rem}
+.sim-q-item{padding:.4rem 0;font-size:14px;color:var(--muted);border-bottom:1px solid var(--bd);display:flex;gap:.5rem}
+.sim-q-item::before{content:'?';color:var(--yel);font-weight:700}
+.big-btn{padding:14px 36px;border-radius:12px;border:none;font-size:15px;font-weight:800;cursor:pointer;transition:.2s}
+.btn-acc{background:var(--acc);color:white}
+.btn-acc:hover{background:#6a5ce0}
+.btn-sec{background:var(--s3);border:1px solid var(--bd);color:var(--txt)}
+.btn-sec:hover{border-color:var(--acc)}
+.plan-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:600px;width:100%;text-align:left;margin-top:.5rem}
+.plan-item{background:var(--s2);border:1px solid var(--bd);border-radius:10px;padding:.85rem 1rem;font-size:13px;color:var(--muted)}
+.plan-item strong{color:var(--txt);display:block;margin-bottom:.2rem;font-size:14px}
+.sim-timer-big{font-size:48px;font-weight:900;font-family:monospace;color:var(--yel)}
+
+/* ── LEXIQUE ── */
+.lex-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.lex-item{background:var(--s2);border:1px solid var(--bd);border-radius:10px;padding:.85rem 1rem}
+.lex-term{font-size:13px;font-weight:700;color:var(--acc);margin-bottom:.2rem}
+.lex-def{font-size:13px;color:var(--muted);line-height:1.5}
+.lex-art{font-size:11px;color:var(--info);margin-top:.2rem}
+
+/* ── WARN BOX ── */
+.warn{background:rgba(245,195,64,.08);border:1px solid rgba(245,195,64,.3);border-radius:10px;padding:.85rem 1rem;font-size:13px;color:#d4b030;margin:.75rem 0}
+.ok-box{background:rgba(76,190,133,.08);border:1px solid rgba(76,190,133,.3);border-radius:10px;padding:.85rem 1rem;font-size:13px;color:#3aaa70;margin:.75rem 0}
+
+@media(max-width:600px){.crit-grid{grid-template-columns:1fr}.lex-grid{grid-template-columns:1fr}.plan-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">⚖️ Coach Oral RGPD</div>
+  <div class="nav-links">
+    <button class="nl active" onclick="go('methode')">📐 Méthode</button>
+    <button class="nl" onclick="go('cas')">📂 Cas du cours</button>
+    <button class="nl" onclick="go('sim')">🎤 Simulation</button>
+    <button class="nl" onclick="go('lex')">📖 Lexique éclair</button>
+  </div>
+  <div class="timer-wrap">
+    <span class="timer-display" id="timer">20:00</span>
+    <button class="tbtn start" id="tbtn" onclick="toggleTimer()">▶</button>
+    <button class="tbtn" onclick="resetTimer()">↺</button>
+  </div>
+</nav>
+
+<!-- ════════════════════════════════════════════════════════
+     PAGE : MÉTHODE
+════════════════════════════════════════════════════════ -->
+<div id="page-methode" class="page on">
+<div class="wrap">
+  <h1>La méthode pour l'oral</h1>
+  <p class="sub">Ce que ton prof attend : des phrases S + V + C, une logique étape par étape, pas de récitation.</p>
+
+  <div class="card card-accent">
+    <h3>🧠 La règle d'or (ton prof l'a dit en cours)</h3>
+    <ul style="margin:.5rem 0 0 1.2rem;color:#c8c8e0;font-size:14px;line-height:2">
+      <li><strong>Le RGPD s'applique</strong> si = champ d'application matériel <strong>ET</strong> territorial réunis</li>
+      <li>S'il y a 2 questions → forcément <strong>1 oui, 1 non</strong> — allez au bout du raisonnement</li>
+      <li>Société inconnue → ne pas chercher sur internet, raisonner avec les indices du texte</li>
+      <li>Question 2 → <strong>renvoyer à la Q1</strong> au lieu de tout répéter</li>
+      <li>On fait des phrases <strong>Sujet + Verbe + Complément</strong>, pas des listes à puces</li>
+    </ul>
+  </div>
+
+  <!-- RAISONNEMENT COMPLET -->
+  <h2 style="margin-top:1.5rem">Le raisonnement complet : "Le RGPD s'applique-t-il ?"</h2>
+
+  <div class="card">
+    <h3>Étape 1 — Champ d'application matériel (4 critères cumulatifs)</h3>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:.75rem">Si UN critère manque → RGPD ne s'applique pas (sur ce champ). Mais quasi toujours tous présents.</p>
+    <div class="crit-grid">
+      <div class="crit">
+        <div class="crit-num">Critère 1</div>
+        <div class="crit-title">Un traitement</div>
+        <div class="crit-desc">Collecte, enregistrement, conservation, consultation, utilisation, communication, effacement… (liste non exhaustive, art. 4.2)</div>
+      </div>
+      <div class="crit">
+        <div class="crit-num">Critère 2</div>
+        <div class="crit-title">Données à caractère personnel</div>
+        <div class="crit-desc">Toute info se rapportant à une personne physique identifiée ou identifiable — directement ou indirectement (nom, IP, GPS, numéro sécu…)</div>
+      </div>
+      <div class="crit">
+        <div class="crit-num">Critère 3</div>
+        <div class="crit-title">Automatisé ou dans un fichier</div>
+        <div class="crit-desc">Automatisé = pas besoin d'intervention humaine. OU contenu dans un fichier = ensemble structuré de données accessibles selon critères (art. 4.6)</div>
+      </div>
+      <div class="crit">
+        <div class="crit-num">Critère 4</div>
+        <div class="crit-title">Personne physique vivante</div>
+        <div class="crit-desc">RGPD ne s'applique pas aux personnes morales ni aux personnes décédées. Les héritiers peuvent être PC dans un contentieux de succession.</div>
+      </div>
+    </div>
+    <div class="crit-grid" style="margin-top:.5rem">
+      <div class="crit excl" style="grid-column:1/-1">
+        <div class="crit-num">❌ Exclusions art. 2§2 — RGPD ne s'applique PAS si :</div>
+        <div class="crit-desc" style="line-height:1.8">• Activités non couvertes par le droit de l'UE (ex : PESC)<br>• Activités <strong>strictement personnelles ou domestiques</strong> — mamie et son répertoire téléphonique<br>• Autorités compétentes pour prévention/détection des infractions pénales (pas d'info au braqueur en filature)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Étape 2 — Champ d'application territorial (3 critères alternatifs)</h3>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:.75rem">Art. 3 — il suffit d'UN seul pour que le RGPD s'applique.</p>
+    <div class="crit-grid">
+      <div class="crit">
+        <div class="crit-num">Critère A — Établissement</div>
+        <div class="crit-title">Art. 3§1</div>
+        <div class="crit-desc">Le RT ou le ST est établi dans l'UE — peu importe où le traitement a lieu</div>
+      </div>
+      <div class="crit">
+        <div class="crit-num">Critère B — Ciblage</div>
+        <div class="crit-title">Art. 3§2</div>
+        <div class="crit-desc">RT hors UE, mais traite des données de personnes <strong>se trouvant dans l'UE</strong> pour offrir des biens/services OU pour le suivi de comportement (publicité ciblée…)</div>
+      </div>
+      <div class="crit" style="grid-column:1/-1">
+        <div class="crit-num">Critère C — Droit international public</div>
+        <div class="crit-title">Art. 3§3</div>
+        <div class="crit-desc">RT hors UE mais le droit d'un État membre s'applique par le droit international. <strong>Ex :</strong> Ambassade d'Islande à Canberra → droit islandais. Ambassade du Maroc à Paris → droit marocain. Avion en eaux internationales → selon pavillon.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card card-green">
+    <h3>💬 La phrase-type à restituer à l'oral</h3>
+    <div class="phrase">
+      "Le RGPD s'applique dès lors que <span class="blank">le champ d'application matériel</span> et <span class="blank">le champ d'application territorial</span> sont simultanément réunis.<br><br>
+      S'agissant du champ matériel, quatre critères cumulatifs doivent être réunis : un traitement, portant sur des données à caractère personnel, automatisé ou contenu dans un fichier, se rapportant à une personne physique.<br><br>
+      En l'espèce, [<span class="blank">NOM</span>] <span class="blank">crée un compte / enregistre des données / consulte un fichier</span>, ce qui constitue un traitement au sens de l'article 4§2 du RGPD. Les données collectées (<span class="blank">nom, email, adresse…</span>) permettent d'identifier une personne physique directement. Le traitement est automatisé. La personne concernée est une personne physique vivante.<br><br>
+      Les quatre critères sont réunis.<br><br>
+      S'agissant du champ territorial, <span class="blank">[critère A/B/C]</span> est satisfait car <span class="blank">[la société est établie en France / elle cible des résidents UE / le droit d'un État membre s'applique]</span>.<br><br>
+      En conséquence, <strong>le RGPD s'applique</strong>."
+    </div>
+  </div>
+
+  <!-- AUTRES TYPES DE QUESTIONS -->
+  <h2 style="margin-top:1.5rem">Les autres questions types</h2>
+
+  <div class="toggler" onclick="toggle(this)">
+    <h3>🧑‍⚖️ Qualifier les acteurs (RT, ST, Coresponsable, DPO)</h3><span class="arr">▶</span>
+  </div>
+  <div class="toggle-body">
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Identifier la personne concernée</div><div class="step-text">Personne physique identifiée ou identifiable dont les données sont traitées. <em>Jamais une entreprise.</em></div></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">Trouver le Responsable de Traitement (RT)</div><div class="step-text">Qui détermine les <em>FINALITÉS</em> (pourquoi traiter) ET les <em>MOYENS</em> (comment traiter) ? — double critère cumulatif <span class="art">art. 4.7</span></div></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-title">Y a-t-il un Sous-Traitant ?</div><div class="step-text">Quelqu'un qui traite des données <em>pour le compte</em> du RT, <em>sur ses instructions</em>. Il suit les ordres, il ne décide pas des finalités. <span class="art">art. 4.8 + art. 28</span></div></div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body"><div class="step-title">Y a-t-il Coresponsabilité ?</div><div class="step-text">Deux entités ou plus déterminent <em>conjointement</em> les finalités ET les moyens. Accord obligatoire. Information des PC. <span class="art">art. 26</span></div></div></div>
+      <div class="step"><div class="step-num">5</div><div class="step-body"><div class="step-title">DPO obligatoire ?</div><div class="step-text">3 cas : <em>(1)</em> autorité publique, <em>(2)</em> traitement à grande échelle de données sensibles, <em>(3)</em> suivi régulier et systématique de personnes à grande échelle. <span class="art">art. 37</span></div></div></div>
+    </div>
+    <div class="phrase">"En l'espèce, <span class="blank">X</span> détermine les finalités — <span class="blank">gérer les candidatures / fidéliser les clients…</span> — et les moyens — <span class="blank">logiciel, serveur, critères de collecte</span>. Il est donc le Responsable de Traitement au sens de l'article 4.7 du RGPD.<br>
+    <span class="blank">Y</span>, qui agit sur instruction de <span class="blank">X</span> et traite des données pour son compte, est le Sous-Traitant au sens de l'article 4.8."</div>
+  </div>
+
+  <div class="toggler" onclick="toggle(this)">
+    <h3>📜 Identifier la base légale</h3><span class="arr">▶</span>
+  </div>
+  <div class="toggle-body">
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Lister les 6 bases (mémo)</div><div class="step-text"><em>ConSent un Contrat, une Obligation Légale, des Intérêts Vitaux, une Mission Publique, un Intérêt Légitime</em><br>→ Consentement / Contrat / Obligation légale / Intérêts vitaux / Mission de service public / Intérêt légitime</div></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">Appliquer la plus pertinente</div><div class="step-text">Contrat = relation contractuelle valide + traitement nécessaire à son exécution.<br>Consentement = libre, spécifique, éclairé, univoque, acte positif clair.<br>Intérêt légitime = nécessaire + légitime + ne heurte pas les droits des PC.</div></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-title">Données sensibles → vérifier art. 9</div><div class="step-text">Les données sensibles (santé, origine, syndicat…) sont <em>interdites par principe</em>. Il faut une exception spécifique de l'art. 9 : souvent consentement <em>explicite</em>.</div></div></div>
+    </div>
+  </div>
+
+  <div class="toggler" onclick="toggle(this)">
+    <h3>🌍 Qualifier un transfert de données</h3><span class="arr">▶</span>
+  </div>
+  <div class="toggle-body">
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Destination = pays UE/EEE ?</div><div class="step-text"><em>OUI</em> → transfert libre (sauf clause contractuelle contraire)</div></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">Décision d'adéquation ?</div><div class="step-text">La Commission a reconnu le pays comme offrant une protection équivalente ? → transfert libre. (Japon, Canada, NZ, RU…)</div></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-title">Garanties appropriées ?</div><div class="step-text">Clauses Contractuelles Types (CCT) OU Règles d'Entreprise Contraignantes (BCR) OU code de conduite approuvé OU certification → OK<br>Simple contrat maison → ✗</div></div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body"><div class="step-title">Aucune garantie → transfert INTERDIT</div><div class="step-text"><span class="art">art. 44-49 RGPD</span></div></div></div>
+    </div>
+  </div>
+
+  <div class="toggler" onclick="toggle(this)">
+    <h3>💬 Structurer la présentation orale (5-10 min)</h3><span class="arr">▶</span>
+  </div>
+  <div class="toggle-body">
+    <div class="ok-box" style="font-size:14px;line-height:2">
+      <strong>Structure recommandée :</strong><br>
+      1. <strong>Accroche</strong> : "Ce sujet traite de [thème], qui soulève la question de [enjeu]."<br>
+      2. <strong>Annonce du plan</strong> : "J'aborderai en première partie [I], puis en seconde partie [II]."<br>
+      3. <strong>Partie I</strong> : définitions + critères + application au cas<br>
+      4. <strong>Transition</strong> : "Après avoir établi X, voyons Y."<br>
+      5. <strong>Partie II</strong> : consequences + obligations + sanctions<br>
+      6. <strong>Conclusion</strong> : synthèse en 2 phrases, ouverture possible
+    </div>
+    <div class="warn">⚠️ Ne récite pas. Dis "en l'espèce" pour appliquer au cas. Le jury veut voir que tu raisonnes, pas que tu mémorises.</div>
+  </div>
+
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     PAGE : CAS PRATIQUES DU COURS
+════════════════════════════════════════════════════════ -->
+<div id="page-cas" class="page">
+<div class="wrap">
+  <h1>Les cas du cours</h1>
+  <p class="sub">Les vrais cas de tes PDFs et de ton DOCX. Lis, réfléchis, puis révèle la correction.</p>
+
+  <!-- CAS 1 : PÈRE NOËL -->
+  <div class="card">
+    <span class="cas-tag t-acc">Examen type — Père Noël</span>
+    <h2>Le Père Noël et le Père Fouettard</h2>
+    <div class="cas-scenario">
+      La Mère Noël est présidente de "Merry Christmas" à Rovaniemi (Finlande) — toutes les lettres des enfants lui sont adressées. Le Père Noël préside "Ho Ho Ho" et est chargé de lire les lettres et d'envoyer les cadeaux, selon un accord avec sa femme. Les lutins ont des sociétés de traduction individuelles ; ils reçoivent les lettres par contrat et fournissent des traductions classées par ordre alphabétique. Les lettres (nom, prénom, adresse, email, accès cheminée, jouet souhaité) sont scannées et stockées dans l'ambassade d'Islande à Canberra. Une application classe les enfants et prédit leurs futures bêtises. Les coordonnées des enfants indisciplinés sont transmises au Père Fouettard.
+    </div>
+
+    <div class="cas-q">Q1 — La société Merry Christmas est-elle soumise au RGPD ? (7 points)</div>
+    <button class="reveal-btn" onclick="reveal(this)">Voir la correction</button>
+    <div class="answer">
+      <strong>Champ matériel :</strong> Les lettres sont scannées et stockées → traitement. Elles contiennent nom, prénom, adresse, email, comportement de l'enfant → données à caractère personnel. Le traitement est automatisé (scan + application de classification). Les enfants sont des personnes physiques vivantes. <strong>Les 4 critères sont réunis.</strong><br><br>
+      <strong>Champ territorial :</strong> Merry Christmas est basée à Rovaniemi, Finlande → État membre de l'UE. <span class="art-ref">Art. 3§1 — critère d'établissement</span> satisfait.<br><br>
+      <strong>✅ Le RGPD s'applique à la société Merry Christmas.</strong><br><br>
+      <em>NB : La transmission au Père Fouettard constitue potentiellement un traitement illicite (données communiquées sans base légale).</em>
+    </div>
+
+    <div class="cas-q">Q2 — Le Père Noël peut-il transférer les lettres aux lutins à Canberra ?</div>
+    <button class="reveal-btn" onclick="reveal(this)">Voir la correction</button>
+    <div class="answer">
+      <strong>Comme répondu à la Q1</strong>, le RGPD s'applique. Les lettres sont transférées vers l'ambassade d'Islande à Canberra (Australie).<br><br>
+      L'ambassade d'Islande à Canberra → le droit islandais s'applique en vertu du droit international public <span class="art-ref">(art. 3§3)</span>. L'Islande est dans l'EEE. <strong>Le transfert est libre</strong> — comme un transfert intra-UE.<br><br>
+      <strong>✅ Pas de précautions supplémentaires nécessaires</strong> car l'ambassade est soumise au droit islandais (EEE).
+    </div>
+
+    <div class="cas-q">Q3 — DPO obligatoire pour le Père Noël ?</div>
+    <button class="reveal-btn" onclick="reveal(this)">Voir la correction</button>
+    <div class="answer">
+      L'application classe les enfants du monde entier → <strong>suivi régulier et systématique à grande échelle</strong> <span class="art-ref">(art. 37.1.b)</span>. <strong>✅ DPO obligatoire.</strong>
+    </div>
+
+    <div class="cas-q">Q4 — Qualifier tous les acteurs et les liens qui les unissent</div>
+    <button class="reveal-btn" onclick="reveal(this)">Voir la correction</button>
+    <div class="answer">
+      <strong>Enfants/parents</strong> = Personnes Concernées (PC)<br><br>
+      <strong>Mère Noël (Merry Christmas)</strong> = Responsable de Traitement — elle détermine les finalités (livrer les cadeaux selon comportement) ET les moyens (lettres scannées, application, lutins). <span class="art-ref">art. 4.7</span><br><br>
+      <strong>Père Noël (Ho Ho Ho)</strong> = Coresponsable de traitement — il détermine CONJOINTEMENT avec la Mère Noël les finalités et moyens, selon l'accord entre eux. <span class="art-ref">art. 26</span><br><br>
+      <strong>Les lutins</strong> (sociétés de traduction individuelles) = Sous-traitants — ils traitent les données (traduction, classement) POUR LE COMPTE du Père Noël, sur ses instructions (critères fournis par contrat). <span class="art-ref">art. 4.8 + art. 28</span><br><br>
+      <strong>Base légale des liens RT/ST</strong> : contrat de sous-traitance <span class="art-ref">art. 28 RGPD</span> — le ST ne peut traiter que sur instruction documentée du RT.
+    </div>
+
+    <div class="cas-q">Q5 — Durée de conservation préconisée pour les lettres ?</div>
+    <button class="reveal-btn" onclick="reveal(this)">Voir la correction</button>
+    <div class="answer">
+      Principe de <strong>conservation limitée</strong> <span class="art-ref">(art. 5.1.e)</span> : les données ne peuvent être conservées plus longtemps que nécessaire à la finalité.<br><br>
+      Finalité = livrer les cadeaux à Noël. Une fois les cadeaux livrés, la finalité est atteinte. <strong>Durée recommandée : jusqu'à fin décembre de l'année concernée, ou au plus tard jusqu'à la livraison complète des cadeaux.</strong><br><br>
+      Éventuellement quelques semaines supplémentaires pour gérer les réclamations, mais pas au-delà.
+    </div>
+
+    <div class="cas-q">Q6 — Ho Ho Ho peut-elle faire l'objet d'un signalement à l'autorité de contrôle locale ?</div>
+    <button class="reveal-btn" onclick="reveal(this)">Voir la correction</button>
+    <div class="answer">
+      En théorie oui. Toute personne peut saisir l'autorité de contrôle compétente. En l'espèce, Ho Ho Ho est basée à Rovaniemi (Finlande) → l'autorité finlandaise (Tietosuojavaltuutettu) est compétente. <span class="art-ref">(art. 77 RGPD)</span><br><br>
+      La CNIL serait compétente si des personnes concernées sont en France. Les sanctions peuvent aller jusqu'à 20 M€ ou 4% du CA <span class="art-ref">(art. 83.5)</span>.
+    </div>
+  </div>
+
+  <!-- CAS 2 : IN-HO / SQUID GAME -->
+  <div class="card">
+    <span class="cas-tag t-grn">Cas pratique — Sous-traitance</span>
+    <h2>In-Ho et le jeu télévisé (Squid Game)</h2>
+    <div class="cas-scenario">
+      In-Ho est un chef d'entreprise coréen qui organise un jeu télévisé avec 456 participants européens pour une cagnotte de milliards de won. Il finance des publicités en Europe et mandate Joon-Ho (recruteur coréen) pour recruter des profils selon une liste de critères : moins de 35 ans, musclé/beau, anglophone, passeport valide, pas de maladie chronique.
+    </div>
+
+    <div class="cas-q">Le RGPD s'applique-t-il ? Qualifier les acteurs.</div>
+    <button class="reveal-btn" onclick="reveal(this)">Voir la correction</button>
+    <div class="answer">
+      <strong>Champ matériel :</strong> Joon-Ho collecte des données (âge, santé, apparence, nationalité…) sur des candidats → traitement. Ces données permettent d'identifier des personnes physiques. Le traitement est automatisé (critères de sélection). Les candidats sont des personnes physiques vivantes. ✅ 4 critères réunis.<br><br>
+      <strong>Champ territorial :</strong> In-Ho n'est pas établi en UE (Corée), mais il finance des publicités en Europe et <strong>cible des personnes se trouvant dans l'UE</strong> pour leur offrir de participer au jeu. <span class="art-ref">Art. 3§2 — critère de ciblage.</span> ✅<br><br>
+      <strong>✅ Le RGPD s'applique.</strong><br><br>
+      <strong>Acteurs :</strong><br>
+      — Candidats européens = Personnes Concernées<br>
+      — In-Ho = Responsable de Traitement (détermine les finalités : sélectionner des candidats ET les moyens : liste de critères fournis à Joon-Ho)<br>
+      — Joon-Ho = Sous-Traitant (recrute pour le compte d'In-Ho, sur sa liste de critères = ses instructions)<br><br>
+      <strong>⚠️ Problème :</strong> "Ne pas souffrir d'une maladie chronique" = donnée de santé = donnée sensible <span class="art-ref">(art. 9)</span>. Interdite sans exception valide. Pas de consentement explicite visible = violation probable.
+    </div>
+  </div>
+
+  <!-- CAS 3 : GERALT / YENNEFER -->
+  <div class="card">
+    <span class="cas-tag t-yel">Cas pratique — RT + ST</span>
+    <h2>Geralt, Yennefer et les GPS</h2>
+    <div class="cas-scenario">
+      Geralt (PDG canadien d'un groupe de 50 sociétés) consulte Jaskier (avocat) et lui délègue l'annonce. Yennefer (DG de la société Witcher à Budapest, Hongrie) commande des voitures hybrides avec GPS toujours allumé et prévient ses employés que les voitures en sont équipées.
+    </div>
+
+    <div class="cas-q">Qui est RT ? Y a-t-il sous-traitance ? Le RGPD s'applique-t-il ?</div>
+    <button class="reveal-btn" onclick="reveal(this)">Voir la correction</button>
+    <div class="answer">
+      <strong>RGPD :</strong> Les données GPS des employés (localisation = donnée personnelle identifiable indirectement) sont collectées en continu. Traitement automatisé. Personnes physiques. ✅<br>
+      Witcher est basée à Budapest (Hongrie = UE). <span class="art-ref">Art. 3§1.</span> ✅ <strong>Le RGPD s'applique.</strong><br><br>
+      <strong>RT :</strong> Yennefer décide de l'installation du GPS et de le laisser allumé → elle détermine la finalité (gestion de flotte) ET les moyens (GPS permanent). Elle est <strong>Responsable de Traitement</strong>.<br><br>
+      Geralt peut être <strong>co-RT</strong> si la décision est prise au niveau de la holding — à préciser selon les faits.<br><br>
+      Jaskier = avocat mandaté ponctuellement, pas un ST au sens RGPD.<br><br>
+      <strong>⚠️ Obligations manquantes :</strong> Information des salariés non conforme (mention orale insuffisante — art. 13 impose information écrite, complète). Principe de minimisation violé si GPS allumé hors temps de travail.
+    </div>
+  </div>
+
+  <!-- CAS 4 : JAIMIE & CLAIRE -->
+  <div class="card">
+    <span class="cas-tag t-info">Cas pratique — Coresponsabilité</span>
+    <h2>Jaimie, Claire et l'agence humanitaire</h2>
+    <div class="cas-scenario">
+      Jaimie et Claire (Écossais à Glasgow) réservent sur un site d'agence humanitaire qui partage un portail commun avec d'autres prestataires (transport, hébergement, suivi médical). Toutes leurs données sont accessibles à tous les acteurs.
+    </div>
+
+    <div class="cas-q">Qualifier les acteurs. Y a-t-il coresponsabilité ?</div>
+    <button class="reveal-btn" onclick="reveal(this)">Voir la correction</button>
+    <div class="answer">
+      Jaimie et Claire = Personnes Concernées<br><br>
+      L'agence + les partenaires déterminent CONJOINTEMENT les finalités (organiser les voyages humanitaires) ET les moyens (portail commun centralisé). → <strong>Coresponsabilité</strong> <span class="art-ref">art. 26</span><br><br>
+      Obligations : accord entre coresponsables définissant les rôles + information transparente des PC sur l'accord et la répartition des responsabilités.<br><br>
+      <strong>⚠️ Données de santé :</strong> "paramètres globaux" inclut probablement données médicales → données sensibles art. 9 → base légale spécifique requise (consentement explicite).<br><br>
+      <strong>RGPD :</strong> Agence établie en France (UE) → art. 3§1 ✅
+    </div>
+  </div>
+
+  <!-- CAS 5 : HOUDINI -->
+  <div class="card">
+    <span class="cas-tag t-red">Cas pratique — Transferts</span>
+    <h2>Houdini, Damian et les transferts de bijoux</h2>
+    <div class="cas-scenario">
+      Houdini (bijouterie, siège à Madrid, succursale à Paris) utilise le logiciel ROY d'une société suisse pour tracker des bijoux. Le numéro vert (+33) redirige vers des équipes en Inde qui voient : nom du client, matricule du bijou, adresse départ/arrivée, position GPS, numéro de téléphone sans nom. Le contrat avec la Couronne espagnole interdit tout transfert hors d'Espagne. Le "prétendant au Ballon d'Or" donne son accord verbal pour un transfert Madrid → Paris.
+    </div>
+
+    <div class="cas-q">Qui est PC, RT, ST ? Y a-t-il un transfert vers l'Inde ? Est-il légal ?</div>
+    <button class="reveal-btn" onclick="reveal(this)">Voir la correction</button>
+    <div class="answer">
+      <strong>PC :</strong> Les clients (sportifs, mannequins, têtes couronnées) dont les données sont traitées.<br><br>
+      <strong>RT :</strong> Houdini (Madrid/Paris) détermine les finalités (gérer la logistique des bijoux) ET les moyens (logiciel ROY, redirection inde). <span class="art-ref">Art. 4.7</span><br><br>
+      <strong>ST :</strong> La société suisse (éditrice de ROY) — traite des données pour le compte de Houdini, sur ses instructions. Les équipes en Inde = sous-traitant ultérieur via la société suisse.<br><br>
+      <strong>Transfert Inde :</strong> Les équipes en Inde accèdent à des données (nom, adresse, GPS, téléphone) → transfert de données vers un pays tiers. L'Inde n'a pas de décision d'adéquation. → Garanties nécessaires (CCT ou BCR). <strong>Le simple numéro de redirection ne suffit pas.</strong><br><br>
+      <strong>Transfert Madrid → Paris :</strong> France et Espagne = UE/EEE → transfert libre. SAUF pour la Couronne espagnole : l'art. 12 du contrat interdit le transfert hors d'Espagne. Viola le contrat ET potentiellement le RGPD si effectué.<br><br>
+      Accord verbal du "prétendant au Ballon d'Or" → insuffisant pour être une base légale valide au sens RGPD.
+    </div>
+  </div>
+
+  <!-- CAS 6 : ALEXIA / MARION / RAYMOND -->
+  <div class="card">
+    <span class="cas-tag t-acc">Cas type DOCX — Champ d'appli territorial</span>
+    <h2>Alexia, Marion et Raymond (courses hippiques)</h2>
+    <div class="cas-scenario">
+      <strong>Alexia</strong> : crée un compte sur un site e-commerce (société inconnue). Elle est au Costa Rica.<br>
+      <strong>Marion</strong> : résidente en France, ciblée par des publicités du même site.<br>
+      <strong>Raymond</strong> : amateur de courses hippiques. TRX (société inconnue) a fait sa pub dans le magazine "Turfistes" ciblant les parieurs sportifs français.
+    </div>
+
+    <div class="cas-q">Le RGPD s'applique-t-il pour chacun ? Ton prof l'a dit : 2 questions = 1 oui, 1 non.</div>
+    <button class="reveal-btn" onclick="reveal(this)">Voir la correction</button>
+    <div class="answer">
+      <strong>Alexia (Costa Rica) :</strong><br>
+      Champ matériel ✅ — création de compte = traitement de données personnelles.<br>
+      Champ territorial : Alexia est au Costa Rica. La société est inconnue (ne pas chercher sur internet). Si elle n'est pas établie en UE et ne cible pas des résidents UE → aucun critère de l'art. 3 satisfait.<br>
+      <strong>❌ RGPD ne s'applique pas pour Alexia.</strong><br><br>
+      <strong>Marion (France) :</strong><br>
+      Champ matériel ✅<br>
+      Champ territorial : Marion se trouve en France (UE), la société lui propose des biens/services → critère de ciblage <span class="art-ref">art. 3§2</span> ✅<br>
+      <strong>✅ RGPD s'applique pour Marion.</strong><br><br>
+      <strong>Raymond (courses hippiques) :</strong><br>
+      Champ matériel ✅<br>
+      TRX a fait de la publicité dans "Turfistes" — magazine ciblant des parieurs français → ciblage de personnes se trouvant en France <span class="art-ref">art. 3§2</span> ✅<br>
+      <strong>✅ RGPD s'applique pour Raymond.</strong>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     PAGE : SIMULATION D'ORAL
+════════════════════════════════════════════════════════ -->
+<div id="page-sim" class="page">
+<div class="wrap">
+  <h1>Simulation d'oral</h1>
+  <p class="sub">Tu tires un sujet au sort. Tu as 20 minutes pour préparer. Puis tu présentes.</p>
+
+  <div class="sim-card" id="sim-start">
+    <div style="font-size:48px">🎲</div>
+    <div style="font-size:16px;color:var(--muted)">Clique pour tirer ton sujet au sort — exactement comme à l'oral</div>
+    <button class="big-btn btn-acc" onclick="drawSubject()">Tirer un sujet</button>
+  </div>
+
+  <div class="sim-card active" id="sim-subject" style="display:none">
+    <div style="font-size:11px;font-weight:700;color:var(--acc);letter-spacing:1px;text-transform:uppercase" id="sim-tag"></div>
+    <div class="sim-big" id="sim-title"></div>
+    <div class="sim-scenario" id="sim-scenario"></div>
+    <div class="sim-questions" id="sim-questions"></div>
+    <div style="margin-top:1rem;display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+      <button class="big-btn btn-acc" onclick="startPrepTimer()">⏱ Démarrer les 20 min de préparation</button>
+      <button class="big-btn btn-sec" onclick="drawSubject()">↺ Nouveau sujet</button>
+    </div>
+  </div>
+
+  <div class="sim-card" id="sim-prep" style="display:none;background:var(--s2)">
+    <div style="font-size:13px;color:var(--muted);margin-bottom:.5rem">Temps de préparation restant</div>
+    <div class="sim-timer-big" id="prep-timer">20:00</div>
+    <div style="font-size:13px;color:var(--muted);margin-top:.5rem">Prends des notes. Construis ton plan en 3 parties.</div>
+    <div class="plan-grid" id="plan-remind">
+      <div class="plan-item"><strong>Partie I</strong>Définitions + critères juridiques</div>
+      <div class="plan-item"><strong>Partie II</strong>Application au cas "en l'espèce"</div>
+      <div class="plan-item"><strong>Transition</strong>"Après avoir établi X, voyons Y"</div>
+      <div class="plan-item"><strong>Conclusion</strong>Synthèse + sanction éventuelle</div>
+    </div>
+    <button class="big-btn btn-sec" onclick="stopPrep()" style="margin-top:.75rem">Arrêter / Passer à la présentation →</button>
+  </div>
+
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     PAGE : LEXIQUE ÉCLAIR
+════════════════════════════════════════════════════════ -->
+<div id="page-lex" class="page">
+<div class="wrap">
+  <h1>Lexique éclair</h1>
+  <p class="sub">Les 20 définitions à avoir en tête — une phrase, un article.</p>
+  <div class="lex-grid">
+    <div class="lex-item"><div class="lex-term">Donnée à caractère personnel</div><div class="lex-def">Toute info se rapportant à une personne physique identifiée ou identifiable, directement ou indirectement</div><div class="lex-art">art. 4.1 RGPD</div></div>
+    <div class="lex-item"><div class="lex-term">Traitement</div><div class="lex-def">Toute opération sur des données : collecte, enregistrement, conservation, consultation, utilisation, communication, effacement…</div><div class="lex-art">art. 4.2 RGPD</div></div>
+    <div class="lex-item"><div class="lex-term">Responsable de traitement</div><div class="lex-def">Détermine les finalités ET les moyens du traitement</div><div class="lex-art">art. 4.7 RGPD</div></div>
+    <div class="lex-item"><div class="lex-term">Sous-traitant</div><div class="lex-def">Traite des données pour le compte du RT, sur ses instructions</div><div class="lex-art">art. 4.8 + art. 28 RGPD</div></div>
+    <div class="lex-item"><div class="lex-term">Coresponsabilité</div><div class="lex-def">2 RT+ déterminent conjointement les finalités ET les moyens. Accord + info PC obligatoires.</div><div class="lex-art">art. 26 RGPD</div></div>
+    <div class="lex-item"><div class="lex-term">Personne concernée</div><div class="lex-def">Personne physique vivante dont les données sont traitées. Jamais une personne morale.</div><div class="lex-art">art. 4.1 RGPD</div></div>
+    <div class="lex-item"><div class="lex-term">Données sensibles</div><div class="lex-def">Origine raciale/ethnique, opinions politiques, religion, syndicat, génétique, biométrique, santé, vie/orientation sexuelle. Interdites par principe.</div><div class="lex-art">art. 9 RGPD</div></div>
+    <div class="lex-item"><div class="lex-term">Anonymisation</div><div class="lex-def">Identification impossible → hors RGPD</div><div class="lex-art">Cons. 26</div></div>
+    <div class="lex-item"><div class="lex-term">Pseudonymisation</div><div class="lex-def">Identification possible avec la clé → reste une donnée personnelle</div><div class="lex-art">art. 4.5 RGPD</div></div>
+    <div class="lex-item"><div class="lex-term">Consentement valide</div><div class="lex-def">Libre, spécifique, éclairé, univoque, acte positif clair. Retrait aussi simple que l'octroi.</div><div class="lex-art">art. 7 RGPD</div></div>
+    <div class="lex-item"><div class="lex-term">6 bases légales</div><div class="lex-def">Consentement / Contrat / Obligation légale / Intérêts vitaux / Mission service public / Intérêt légitime</div><div class="lex-art">art. 6 RGPD</div></div>
+    <div class="lex-item"><div class="lex-term">Minimisation</div><div class="lex-def">Collecter uniquement ce qui est strictement nécessaire à la finalité</div><div class="lex-art">art. 5.1.c RGPD</div></div>
+    <div class="lex-item"><div class="lex-term">Finalité</div><div class="lex-def">Déterminée, explicite, légitime. Définie AVANT la collecte. Pas de sur-collecte.</div><div class="lex-art">art. 5.1.b RGPD</div></div>
+    <div class="lex-item"><div class="lex-term">DPO (Délégué Protection Données)</div><div class="lex-def">Obligatoire si : autorité publique / suivi régulier systématique grande échelle / données sensibles grande échelle</div><div class="lex-art">art. 37 RGPD</div></div>
+    <div class="lex-item"><div class="lex-term">CNIL</div><div class="lex-def">AAI, 18 membres, fonction juridictionnelle. Contrôle, sanctionne, ne peut pas indemniser. Amendes → Trésor Public.</div><div class="lex-art">Loi I&L</div></div>
+    <div class="lex-item"><div class="lex-term">Critère de ciblage</div><div class="lex-def">RT hors UE mais traite des données de personnes SE TROUVANT dans l'UE pour offrir biens/services ou suivre comportement</div><div class="lex-art">art. 3§2 RGPD</div></div>
+    <div class="lex-item"><div class="lex-term">Décision d'adéquation</div><div class="lex-def">Commission européenne reconnaît qu'un pays tiers offre une protection équivalente → transfert libre</div><div class="lex-art">art. 45 RGPD</div></div>
+    <div class="lex-item"><div class="lex-term">CCT (Clauses Contractuelles Types)</div><div class="lex-def">Garantie appropriée adoptée par la Commission pour les transferts hors UE sans décision d'adéquation</div><div class="lex-art">art. 46 RGPD</div></div>
+    <div class="lex-item"><div class="lex-term">Violation de données</div><div class="lex-def">Destruction, perte, altération, divulgation ou accès non autorisé à des données. Notifier CNIL dans 72h.</div><div class="lex-art">art. 33-34 RGPD</div></div>
+    <div class="lex-item"><div class="lex-term">Amendes RGPD</div><div class="lex-def">Niveau 1 : 10 M€ ou 2% CA (procédural). Niveau 2 : 20 M€ ou 4% CA (substantiel).</div><div class="lex-art">art. 83 RGPD</div></div>
+  </div>
+  <div class="warn" style="margin-top:1rem">💡 À l'oral : cite toujours l'article RGPD. "Au sens de l'article 4.7 du RGPD…" — ça fait la différence.</div>
+</div>
+</div>
+
+<script>
+// ── NAV ──────────────────────────────────────────────────
+function go(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.nl').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('on');
+  const idx=['methode','cas','sim','lex'].indexOf(id);
+  document.querySelectorAll('.nl')[idx]?.classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ── TOGGLE ────────────────────────────────────────────────
+function toggle(el){
+  el.classList.toggle('open');
+  const body=el.nextElementSibling;
+  body.classList.toggle('open');
+}
+
+// ── REVEAL ───────────────────────────────────────────────
+function reveal(btn){
+  const ans=btn.nextElementSibling;
+  ans.classList.toggle('show');
+  btn.textContent=ans.classList.contains('show')?'Masquer la correction':'Voir la correction';
+}
+
+// ── GLOBAL TIMER ─────────────────────────────────────────
+let timerInterval=null, timerSeconds=1200, timerRunning=false;
+function toggleTimer(){
+  if(timerRunning){clearInterval(timerInterval);timerRunning=false;document.getElementById('tbtn').textContent='▶';document.getElementById('tbtn').className='tbtn start';}
+  else{timerRunning=true;document.getElementById('tbtn').textContent='⏸';document.getElementById('tbtn').className='tbtn stop';
+    timerInterval=setInterval(()=>{if(timerSeconds>0){timerSeconds--;updateTimerDisplay();}else{clearInterval(timerInterval);timerRunning=false;document.getElementById('timer').textContent='00:00';document.getElementById('timer').style.color='var(--red)';}},1000);}
+}
+function resetTimer(){clearInterval(timerInterval);timerRunning=false;timerSeconds=1200;updateTimerDisplay();document.getElementById('timer').style.color='var(--yel)';document.getElementById('tbtn').textContent='▶';document.getElementById('tbtn').className='tbtn start';}
+function updateTimerDisplay(){const m=Math.floor(timerSeconds/60),s=timerSeconds%60;document.getElementById('timer').textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');}
+
+// ── SIMULATION ───────────────────────────────────────────
+const SUBJECTS = [
+  {tag:'SUJET A — Champ d\'application',title:'La plateforme de covoiturage',scenario:'BlaBlaTrajet est une startup française (Paris) qui propose une application de covoiturage. Elle collecte le nom, prénom, numéro de téléphone, localisation GPS en temps réel et évaluations des conducteurs et passagers. Un accord de partenariat est signé avec TruckData Inc., société basée au Texas (USA), pour analyser les données de comportement de conduite et améliorer l\'algorithme de recommandation.',questions:['Le RGPD s\'applique-t-il à BlaBlaTrajet ? Justifiez en appliquant les critères cumulatifs.','Y a-t-il un transfert de données vers les USA ? Est-il légal ? Quelles précautions prendre ?','Qualifiez la relation entre BlaBlaTrajet et TruckData Inc.']},
+  {tag:'SUJET B — Acteurs de la donnée',title:'L\'école et l\'application scolaire',scenario:'Le lycée Voltaire (public, Paris) utilise l\'application "EduTrack" développée par EduSoft (société privée, Lyon) pour gérer les notes, absences et comportements des élèves. EduSoft héberge les données sur ses serveurs et peut les utiliser pour ses études statistiques anonymisées. Le directeur du lycée a signé un contrat précisant qu\'EduSoft ne peut pas utiliser les données à d\'autres fins.',questions:['Qui est le Responsable de Traitement ? Le Sous-Traitant ?','Le lycée doit-il nommer un DPO ? Justifiez.','Le contrat suffit-il pour encadrer la relation avec EduSoft ?']},
+  {tag:'SUJET C — Bases légales',title:'La newsletter et le fichier clients',scenario:'Une boutique de cosmétiques en ligne (France) collecte lors de chaque achat : nom, prénom, email, adresse, historique d\'achats, préférences de produits. Elle envoie ensuite une newsletter mensuelle et des offres ciblées par email. La case "je souhaite recevoir des offres promotionnelles" est pré-cochée lors de la commande. La boutique conserve les données 10 ans.',questions:['Quelle base légale pour l\'envoi de la newsletter ? La case pré-cochée est-elle valide ?','Quels principes du RGPD sont violés ? Développez.','Quels droits les clients peuvent-ils exercer ?']},
+  {tag:'SUJET D — Violations & Sanctions',title:'La fuite chez le médecin',scenario:'Un cabinet médical (3 médecins, Bordeaux) utilise un logiciel de gestion de dossiers patients. Suite à une cyberattaque un vendredi soir, 2 000 dossiers patients sont exfiltrés (noms, diagnostics, traitements, numéros de sécurité sociale). Le cabinet le découvre le lundi matin. Les médecins hésite à informer les patients pour ne pas les alarmer.',questions:['Quelle est l\'obligation du cabinet dans les 72h ? Que doit contenir la notification ?','Faut-il informer les 2 000 patients ? Pourquoi ?','Y a-t-il violation d\'une obligation de sécurité ? Laquelle ?']},
+];
+
+let prepInterval=null, prepSeconds=1200;
+
+function drawSubject(){
+  const s=SUBJECTS[Math.floor(Math.random()*SUBJECTS.length)];
+  document.getElementById('sim-start').style.display='none';
+  document.getElementById('sim-prep').style.display='none';
+  const sub=document.getElementById('sim-subject');
+  sub.style.display='flex';
+  document.getElementById('sim-tag').textContent=s.tag;
+  document.getElementById('sim-title').textContent=s.title;
+  document.getElementById('sim-scenario').textContent=s.scenario;
+  document.getElementById('sim-questions').innerHTML='<div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.4rem">Questions :</div>'+s.questions.map((q,i)=>`<div class="sim-q-item">${i+1}. ${q}</div>`).join('');
+  clearInterval(prepInterval);
+}
+
+function startPrepTimer(){
+  document.getElementById('sim-subject').style.display='none';
+  document.getElementById('sim-prep').style.display='flex';
+  prepSeconds=1200;
+  updatePrepDisplay();
+  clearInterval(prepInterval);
+  prepInterval=setInterval(()=>{
+    if(prepSeconds>0){prepSeconds--;updatePrepDisplay();}
+    else{clearInterval(prepInterval);document.getElementById('prep-timer').textContent="C'est l'heure !";document.getElementById('prep-timer').style.color='var(--red)';}
+  },1000);
+  // Sync with global timer
+  resetTimer();toggleTimer();
+}
+
+function updatePrepDisplay(){
+  const m=Math.floor(prepSeconds/60),s=prepSeconds%60;
+  document.getElementById('prep-timer').textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+  document.getElementById('prep-timer').style.color=prepSeconds<120?'var(--red)':prepSeconds<300?'var(--ora)':'var(--yel)';
+}
+
+function stopPrep(){
+  clearInterval(prepInterval);
+  document.getElementById('sim-prep').style.display='none';
+  document.getElementById('sim-start').style.display='flex';
+  clearInterval(timerInterval);timerRunning=false;
+  timerSeconds=1200;updateTimerDisplay();
+  document.getElementById('timer').style.color='var(--yel)';
+  document.getElementById('tbtn').textContent='▶';document.getElementById('tbtn').className='tbtn start';
+}
+</script>
+</body>
+</html>
